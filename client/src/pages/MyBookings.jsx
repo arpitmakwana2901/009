@@ -13,6 +13,7 @@ const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [moviesData, setMoviesData] = useState([]);
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -20,10 +21,24 @@ const MyBookings = () => {
     try {
       const res = await axios.get(`${API_URL}/shows/getShows`);
       setMoviesData(res.data.data || []);
-    } catch (err) {
-      console.error("Error fetching movies:", err);
+    } catch (error) {
+      console.error(error);
       setMoviesData([]);
     }
+  };
+
+  const mergeWithMovieData = (booking) => {
+    const movie = moviesData.find(
+      (m) => m._id === booking.movieId || m.title === booking.movieTitle
+    );
+
+    return {
+      ...booking,
+      movieTitle: movie?.title || booking.movieTitle,
+      poster_path:
+        movie?.backdrop_path || movie?.poster_path || booking.poster_path,
+      runtime: movie?.runtime || booking.runtime,
+    };
   };
 
   const getMyBookings = async () => {
@@ -37,15 +52,9 @@ const MyBookings = () => {
       await fetchMoviesData();
 
       if (location.state?.latestBooking) {
-        const mergedBooking = mergeWithMovieData(location.state.latestBooking);
-        setBookings([mergedBooking]);
+        setBookings([mergeWithMovieData(location.state.latestBooking)]);
+        toast.success(location.state.message);
         setIsLoading(false);
-
-        if (location.state.success) {
-          toast.success(
-            location.state.message || "Booking confirmed successfully!"
-          );
-        }
         return;
       }
 
@@ -54,12 +63,9 @@ const MyBookings = () => {
       });
 
       if (res.data.success) {
-        const mergedBookings = res.data.data.map((booking) =>
-          mergeWithMovieData(booking)
-        );
-        setBookings(mergedBookings);
+        setBookings(res.data.data.map(mergeWithMovieData));
       } else {
-        toast.error(res.data.message || "Failed to fetch bookings");
+        toast.error("Failed to fetch bookings");
       }
     } catch (error) {
       console.error(error);
@@ -69,56 +75,22 @@ const MyBookings = () => {
     }
   };
 
-  const mergeWithMovieData = (booking) => {
-    const matchedMovie = moviesData.find(
-      (movie) =>
-        movie._id === booking.movieId || movie.title === booking.movieTitle
-    );
-
-    return {
-      ...booking,
-      movieTitle: matchedMovie?.title || booking.movieTitle,
-      poster_path:
-        matchedMovie?.backdrop_path ||
-        matchedMovie?.poster_path ||
-        booking.poster_path,
-      backdrop_path: matchedMovie?.backdrop_path || booking.backdrop_path,
-      runtime: matchedMovie?.runtime || booking.runtime,
-      genres: matchedMovie?.genres || booking.genres,
-      release_date: matchedMovie?.release_date || booking.release_date,
-      vote_average: matchedMovie?.vote_average || booking.vote_average,
-      time: booking.time,
-      seats: booking.seats,
-      totalAmount: booking.totalAmount,
-      showDate: booking.showDate,
-      isPaid: booking.isPaid,
-      _id: booking._id,
-    };
-  };
-
   useEffect(() => {
     getMyBookings();
   }, [location.state]);
 
-  const showAllBookings = () => {
-    navigate("/my-bookings", { replace: true });
-    window.location.reload();
+  const handlePayNow = (booking) => {
+    navigate("/done-payment", { state: { booking } });
   };
 
   return (
     <div className="relative px-6 md:px-16 lg:px-40 pt-30 md:pt-40 min-h-[80vh]">
       <Toaster position="top-center" />
       <BlurCircle top="100px" left="100px" />
-      <div>
-        <BlurCircle bottom="0px" left="600px" />
-      </div>
+      <BlurCircle bottom="0px" left="600px" />
 
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-lg font-semibold">
-          {location.state?.latestBooking
-            ? "Your Latest Booking"
-            : "My Bookings"}
-        </h1>
+        <h1 className="text-lg font-semibold">My Bookings</h1>
       </div>
 
       {isLoading && (
@@ -141,20 +113,16 @@ const MyBookings = () => {
         >
           <div className="flex flex-col md:flex-row">
             <img
-              src={
-                item.poster_path ||
-                item.moviePoster ||
-                assets.poster_placeholder
-              }
+              src={item.poster_path || assets.poster_placeholder}
               alt={item.movieTitle}
               className="md:max-w-45 aspect-video h-auto object-cover object-bottom rounded"
             />
+
             <div className="flex flex-col p-4">
               <p className="text-lg font-semibold">{item.movieTitle}</p>
               <p className="text-gray-400 text-sm">
                 {timeFormat(item.runtime)}
               </p>
-              <p className="text-gray-400 text-sm">Show Time: {item.time}</p>
               <p className="text-gray-400 text-sm mt-auto">
                 {dateFormat(item.showDate)}
               </p>
@@ -169,7 +137,10 @@ const MyBookings = () => {
               </p>
 
               {!item.isPaid && (
-                <button className="flex items-center gap-2 px-8 py-3 bg-[#e64949] hover:bg-[#d13c3c] transition rounded-full font-semibold text-white text-sm shadow-md active:scale-95">
+                <button
+                  onClick={() => handlePayNow(item)}
+                  className="flex items-center gap-2 px-8 py-3 bg-[#e64949] hover:bg-[#d13c3c] transition rounded-full font-semibold text-white text-sm shadow-md active:scale-95"
+                >
                   Pay Now
                 </button>
               )}

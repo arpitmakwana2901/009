@@ -15,12 +15,16 @@ const adminSidebarRoute = require("./routes/adminSidebarRoute");
 const dashboardRoute = require("./routes/adminDashboardRoute");
 const favoriteRouter = require("./routes/favoriteRoute");
 const adminListBookingsRoute = require("./routes/adminListBookingsRoute");
+const paymentRouter = require("./routes/paymentRoute");
 const app = express();
 require("dotenv").config();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      "http://localhost:5173",
+      "https://movie-project-six-tan.vercel.app",
+    ],
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -36,13 +40,15 @@ app.use("/book-ticket", bookingRoute);
 app.use("/seat-layout", seatLayoutRoutes);
 app.use("/seat-booking", seatBookingRoute);
 app.use("/checkout", checkoutRoute);
-app.use("/payments", paynowRoute);
+app.use("/", paynowRoute);
 app.use("/homepage", homepageRouter);
 app.use("/featuredSection", featuredSectionRoute);
 app.use("/adminSidebar", adminSidebarRoute);
 app.use("/adminDashboard", dashboardRoute);
 app.use("/favorite", favoriteRouter);
 app.use("/admin", adminListBookingsRoute);
+app.use("/payments", paymentRouter);
+
 app.listen(process.env.PORT || 3690, (error) => {
   if (error) {
     console.log("Server is not connected", error.message);
