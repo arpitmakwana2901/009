@@ -7,14 +7,15 @@ import { dateFormat } from "../lib/dateFormat";
 import axios from "axios";
 import { toast, Toaster } from "react-hot-toast";
 import { API_URL } from "../App";
+import { useAuth } from "../components/context/AuthContext";
 
 const MyBookings = () => {
   const currency = import.meta.env.VITE_CURRENCY;
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [moviesData, setMoviesData] = useState([]);
-
   const location = useLocation();
+  const { token: authToken } = useAuth();
   const navigate = useNavigate();
 
   const fetchMoviesData = async () => {
@@ -81,10 +82,20 @@ const MyBookings = () => {
 
   const handlePayNow = async (booking) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token") || authToken;
+      if (!token) {
+        toast.error("Please login to pay");
+        return;
+      }
+
+      const bookingId = booking?._id;
+      if (!bookingId) {
+        toast.error("Invalid booking id");
+        return;
+      }
 
       const res = await axios.post(
-        `${API_URL}/checkout/pay-now/${booking._id}`,
+        `${API_URL}/stored/pay-now/${bookingId}`,
         {
           paymentId: "PAY_" + Date.now(),
         },
@@ -105,6 +116,7 @@ const MyBookings = () => {
         });
       }
     } catch (error) {
+      console.error(error);
       toast.error("Payment failed");
     }
   };

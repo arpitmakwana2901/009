@@ -75,11 +75,12 @@ const SeatLayout = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         toast.error("Login required");
-        navigate("/login");
+        navigate("/auth");
         return;
       }
 
-      const res = await axios.post(
+      // 1) Lock / reserve seats (updates SeatLayout + creates seat-booking record)
+      const seatRes = await axios.post(
         `${API_URL}/seat-booking/book-seats`,
         {
           movieId: id,
@@ -89,11 +90,23 @@ const SeatLayout = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (res.data.success) {
-        const currentMovie = moviesData.find((movie) => movie._id === id);
+      if (!seatRes.data.success) {
+        toast.error(seatRes.data.message || "Booking failed");
+        return;
+      }
 
-        const bookingData = {
-          _id: res.data.booking?._id || Date.now().toString(),
+      const currentMovie = moviesData.find((movie) => movie._id === id);
+
+      const totalAmount = selectedSeats.reduce((total, seatId) => {
+        const [categoryName] = seatId.split("-");
+        const section = seatRows[categoryName];
+        return total + (section?.price || 0);
+      }, 0);
+
+      // 2) Create a Checkout booking in DB (this gives a REAL Mongo _id used by Pay Now)
+      const checkoutRes = await axios.post(
+        `${API_URL}/checkout/create-checkout`,
+        {
           movieId: id,
           movieTitle: currentMovie?.title || layoutData?.movieTitle || "Movie",
           poster_path:
@@ -101,29 +114,25 @@ const SeatLayout = () => {
             currentMovie?.poster_path ||
             layoutData?.poster_path ||
             "",
-          backdrop_path: currentMovie?.backdrop_path || "",
           runtime: currentMovie?.runtime || layoutData?.runtime || 120,
-          genres: currentMovie?.genres || [],
           time: selectedTime.time,
-          seats: selectedSeats,
-          totalAmount: selectedSeats.reduce((total, seatId) => {
-            const [categoryName] = seatId.split("-");
-            const section = seatRows[categoryName];
-            return total + (section?.price || 0);
-          }, 0),
           showDate: new Date(),
-          isPaid: false,
-        };
+          seats: selectedSeats,
+          totalAmount,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
+      if (checkoutRes.data.success) {
         navigate("/my-bookings", {
           state: {
-            latestBooking: bookingData,
+            latestBooking: checkoutRes.data.data,
             success: true,
-            message: "Booking successful!",
+            message: "Booking created. Please complete payment.",
           },
         });
       } else {
-        toast.error(res.data.message);
+        toast.error(checkoutRes.data.message || "Failed to create checkout");
       }
     } catch (error) {
       console.error("❌ Booking error:", error);

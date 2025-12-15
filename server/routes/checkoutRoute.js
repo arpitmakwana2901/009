@@ -6,7 +6,7 @@ const checkoutRoute = express.Router();
 checkoutRoute.post("/create-checkout", authenticate, async (req, res) => {
   try {
     const userId = req.user._id || req.user.userId;
-    console.log(userId, "userId");
+
     const {
       movieId,
       movieTitle,
@@ -18,8 +18,7 @@ checkoutRoute.post("/create-checkout", authenticate, async (req, res) => {
       totalAmount,
     } = req.body;
 
-    // Validation
-    if (!movieId || !movieTitle || !seats || seats.length === 0) {
+    if (!movieId || !movieTitle || !seats || seats.length === 0 || !showDate) {
       return res.status(400).json({
         success: false,
         message: "Required fields missing",
@@ -33,19 +32,20 @@ checkoutRoute.post("/create-checkout", authenticate, async (req, res) => {
       poster_path,
       runtime,
       time,
-      showDate: new Date(showDate),
       seats,
       totalAmount,
-      isPaid: false, // Default - aap baad mein payment integrate kar sakte hain
+      selectedDate: new Date(showDate), // ✅ FIX
+      isPaid: false,
+      status: "pending",
     });
 
     res.status(201).json({
       success: true,
-      data: booking,
+      data: booking, // ✅ MONGO _id yahin se milegi
       message: "Booking created successfully",
     });
   } catch (error) {
-    console.error(error);
+    console.error("CREATE CHECKOUT ERROR:", error);
     res.status(500).json({
       success: false,
       message: error.message,
