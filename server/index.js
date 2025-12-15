@@ -40,15 +40,15 @@ app.use("/book-ticket", bookingRoute);
 app.use("/seat-layout", seatLayoutRoutes);
 app.use("/seat-booking", seatBookingRoute);
 app.use("/checkout", checkoutRoute);
-app.use("/", paynowRoute);
+app.use("/stored", paynowRoute);
 app.use("/homepage", homepageRouter);
 app.use("/featuredSection", featuredSectionRoute);
 app.use("/adminSidebar", adminSidebarRoute);
 app.use("/adminDashboard", dashboardRoute);
 app.use("/favorite", favoriteRouter);
 app.use("/admin", adminListBookingsRoute);
+// Ye line change karo
 app.use("/payments", paymentRouter);
-
 app.listen(process.env.PORT || 3690, (error) => {
   if (error) {
     console.log("Server is not connected", error.message);

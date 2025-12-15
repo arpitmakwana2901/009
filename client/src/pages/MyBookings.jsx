@@ -79,8 +79,34 @@ const MyBookings = () => {
     getMyBookings();
   }, [location.state]);
 
-  const handlePayNow = (booking) => {
-    navigate("/done-payment", { state: { booking } });
+  const handlePayNow = async (booking) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.post(
+        `${API_URL}/checkout/pay-now/${booking._id}`,
+        {
+          paymentId: "PAY_" + Date.now(),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.data.success) {
+        toast.success("Payment Successful 🎉");
+
+        navigate("/done-payment", {
+          state: {
+            booking: res.data.data,
+          },
+        });
+      }
+    } catch (error) {
+      toast.error("Payment failed");
+    }
   };
 
   return (

@@ -2,17 +2,18 @@ const express = require("express");
 const Payment = require("../models/paymentModel");
 const paymentRouter = express.Router();
 
-// POST /api/payments - Save payment to DB
-paymentRouter.post("/", async (req, res) => {
+// POST /payments/api
+paymentRouter.post("/api", async (req, res) => {
   try {
     const { userId, bookingId, movieTitle, seats, totalAmount } = req.body;
 
-    // Validate required fields
     if (!userId || !bookingId || !movieTitle || !seats || !totalAmount) {
-      return res.status(400).json({ message: "Missing required fields" });
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
     }
 
-    // Create new payment
     const newPayment = new Payment({
       userId,
       bookingId,
@@ -23,12 +24,17 @@ paymentRouter.post("/", async (req, res) => {
 
     await newPayment.save();
 
-    res
-      .status(201)
-      .json({ message: "Payment saved successfully", payment: newPayment });
+    res.status(201).json({
+      success: true,
+      message: "Payment saved successfully",
+      payment: newPayment,
+    });
   } catch (error) {
-    console.error("Error saving payment:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Payment Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 });
 

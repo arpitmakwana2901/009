@@ -2,7 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../components/context/AuthContext";
-import axios from "axios"; // Add this import
+import axios from "axios";
 import { API_URL } from "../App";
 
 const DonePayment = () => {
@@ -26,29 +26,31 @@ const DonePayment = () => {
     }
 
     try {
-      // API call to backend to save payment
-      const response = await axios.post(`${API_URL}/payments`, {
-        userId: userData._id, // Assume userData me _id hai from auth
+      const res = await axios.post(`${API_URL}/payments/api`, {
+        userId: userData._id,
         bookingId: booking._id,
         movieTitle: booking.movieTitle,
         seats: booking.seats,
         totalAmount: booking.totalAmount,
       });
 
-      if (response.status === 201) {
-        toast.success("🎉 Payment Successful and saved to database!");
+      if (res.data.success) {
+        toast.success("🎉 Payment Successful!");
 
         navigate("/my-bookings", {
           state: {
-            success: true,
-            bookingId: booking._id,
+            latestBooking: {
+              ...booking,
+              isPaid: true,
+            },
             message: "Booking confirmed successfully!",
           },
           replace: true,
         });
       }
     } catch (error) {
-      toast.error("Payment failed: " + error.message);
+      console.error(error);
+      toast.error(error.response?.data?.message || "Payment failed");
     }
   };
 
@@ -61,14 +63,10 @@ const DonePayment = () => {
           <p>
             <span className="text-gray-400">Movie:</span> {booking.movieTitle}
           </p>
-
           <p>
             <span className="text-gray-400">Seats:</span>{" "}
-            {Array.isArray(booking.seats)
-              ? booking.seats.join(", ")
-              : booking.seats}
+            {booking.seats.join(", ")}
           </p>
-
           <p>
             <span className="text-gray-400">Amount:</span> ₹
             {booking.totalAmount}
@@ -94,3 +92,4 @@ const DonePayment = () => {
 };
 
 export default DonePayment;
+ 
