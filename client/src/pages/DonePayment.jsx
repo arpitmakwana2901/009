@@ -8,8 +8,8 @@ import { API_URL } from "../App";
 const DonePayment = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const { userData } = useAuth();
-
+  const { token } = useAuth();
+  console.log(token, "token");
   const booking = state?.booking;
 
   if (!booking) {
@@ -19,20 +19,32 @@ const DonePayment = () => {
   }
 
   const handlePayment = async () => {
-    if (!userData) {
+    if (!token) {
       toast.error("Please login to continue");
       navigate("/auth");
       return;
     }
 
     try {
-      const res = await axios.post(`${API_URL}/payments/api`, {
-        userId: userData._id,
-        bookingId: booking._id,
-        movieTitle: booking.movieTitle,
-        seats: booking.seats,
-        totalAmount: booking.totalAmount,
-      });
+      const res = await axios.post(
+        `${API_URL}/payments/api`,
+        {
+          bookingId: booking._id,
+          
+          movieTitle: booking.movieTitle,
+          seats: booking.seats,
+          totalAmount: booking.totalAmount,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+        
+      );
+
+      console.log("PAYMENT RESPONSE:", res.data);
+            console.log(booking, "bookingId");
 
       if (res.data.success) {
         toast.success("🎉 Payment Successful!");
@@ -92,4 +104,3 @@ const DonePayment = () => {
 };
 
 export default DonePayment;
- 
