@@ -25,13 +25,12 @@ adminListBookingsRoute.get("/all-bookings", async (req, res) => {
 });
 
 // GET /admin/shows-stats
-// Returns Show list with computed { totalBookings, earnings } from paid checkouts.
+// Returns Show list with computed { totalBookings, earnings } from ALL checkouts.
 adminListBookingsRoute.get("/shows-stats", async (req, res) => {
   try {
     const shows = await ShowModel.find().sort({ createdAt: -1 });
 
     const stats = await CheckoutModel.aggregate([
-      { $match: { isPaid: true } },
       {
         $group: {
           _id: "$movieId",
@@ -54,22 +53,8 @@ adminListBookingsRoute.get("/shows-stats", async (req, res) => {
         earnings: 0,
       };
 
-      // showDates is a Mongoose Map; convert to a plain object so JSON keeps the entries
-      const showDatesObj = show.showDates
-        ? Object.fromEntries(show.showDates)
-        : {};
-
-      // Count UNIQUE time slots per date (prevents duplicates from inflating counts)
-      const showTimeCount = Object.values(showDatesObj).reduce((sum, times) => {
-        const arr = Array.isArray(times) ? times : [];
-        const uniq = new Set(arr.map((t) => String(t).trim()).filter(Boolean));
-        return sum + uniq.size;
-      }, 0);
-
       return {
         ...show.toObject(),
-        showDates: showDatesObj,
-        showTimeCount,
         totalBookings: s.totalBookings,
         earnings: s.earnings,
       };

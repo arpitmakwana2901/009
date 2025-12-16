@@ -11,7 +11,7 @@ const ListShows = () => {
 
   const fetchAllShows = async () => {
     try {
-      // Use admin endpoint that includes computed booking stats
+      // Admin endpoint provides computed totals
       const res = await axios.get(`${API_URL}/admin/shows-stats`);
 
       if (res.data.success) {
@@ -41,7 +41,6 @@ const ListShows = () => {
           <thead>
             <tr className="bg-[#3b0d0d] text-left text-white">
               <th className="p-3 font-medium pl-5">Movie Name</th>
-              <th className="p-3 font-medium">Show Time Count</th>
               <th className="p-3 font-medium">Total Bookings</th>
               <th className="p-3 font-medium">Earnings</th>
             </tr>
@@ -50,7 +49,7 @@ const ListShows = () => {
           <tbody className="text-sm font-light">
             {loading && (
               <tr>
-                <td colSpan="4" className="p-4 text-center">
+                <td colSpan="3" className="p-4 text-center">
                   Loading shows...
                 </td>
               </tr>
@@ -58,7 +57,7 @@ const ListShows = () => {
 
             {!loading && shows.length === 0 && (
               <tr>
-                <td colSpan="4" className="p-4 text-center text-gray-400">
+                <td colSpan="3" className="p-4 text-center text-gray-400">
                   No shows found
                 </td>
               </tr>
@@ -75,10 +74,7 @@ const ListShows = () => {
                 >
                   <td className="p-2 min-w-45 pl-5">{show.title}</td>
 
-                  {/* Total shows created */}
-                  <td className="p-2">{show?.showTimeCount || 0}</td>
-
-                  {/* Total seats */}
+                  {/* Total bookings */}
                   <td className="p-2">{totalBookings}</td>
 
                   {/* Total earnings */}

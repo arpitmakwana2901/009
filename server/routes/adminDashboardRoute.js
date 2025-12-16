@@ -8,12 +8,11 @@ const dashboardRoute = express.Router();
 
 dashboardRoute.get("/", async (req, res) => {
   try {
-    // 🧮 Total Bookings (paid only)
-    const totalBookings = await CheckoutModel.countDocuments({ isPaid: true });
+    // 🧮 Total Bookings (all checkouts)
+    const totalBookings = await CheckoutModel.countDocuments();
 
-    // 💰 Total Revenue (paid only)
+    // 💰 Total Revenue (all checkouts)
     const totalRevenueAgg = await CheckoutModel.aggregate([
-      { $match: { isPaid: true } },
       { $group: { _id: null, total: { $sum: "$totalAmount" } } },
     ]);
     const totalRevenue = totalRevenueAgg[0]?.total || 0;
@@ -29,7 +28,6 @@ dashboardRoute.get("/", async (req, res) => {
     console.log(totalUser, "totaluser");
     // 🎟️ Booking Stats per Movie
     const bookingsPerMovie = await CheckoutModel.aggregate([
-      { $match: { isPaid: true } },
       {
         $group: {
           _id: "$movieTitle",
