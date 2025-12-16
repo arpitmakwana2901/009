@@ -11,12 +11,11 @@ const ListShows = () => {
 
   const fetchAllShows = async () => {
     try {
-      const res = await axios.get(
-        `${API_URL}/shows/getShows`
-      );
+      // Use admin endpoint that includes computed booking stats
+      const res = await axios.get(`${API_URL}/admin/shows-stats`);
 
-      if (res.data.data) {
-        setShows(res.data.data);
+      if (res.data.success) {
+        setShows(res.data.data || []);
       } else {
         setShows([]);
       }
@@ -66,10 +65,8 @@ const ListShows = () => {
             )}
 
             {shows.map((show, index) => {
-              // Calculate total seats booked
-              const totalBookings = show?.occupiedSeats
-                ? Object.keys(show.occupiedSeats).length
-                : 0;
+              const totalBookings = show?.totalBookings || 0;
+              const earnings = show?.earnings || 0;
 
               return (
                 <tr
@@ -88,7 +85,7 @@ const ListShows = () => {
 
                   {/* Total earnings */}
                   <td className="p-2">
-                    {currency} {totalBookings * (show.price || 0)}
+                    {currency} {earnings}
                   </td>
                 </tr>
               );

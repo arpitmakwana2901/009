@@ -46,7 +46,7 @@ const DonePayment = () => {
       console.log(booking, "bookingId");
 
       if (res.data.success) {
-        toast.success("🎉 Payment Successful!");
+        // toast.success("🎉 Payment Successful!");
 
         navigate("/my-bookings", {
           state: {
