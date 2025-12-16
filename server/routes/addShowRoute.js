@@ -25,23 +25,16 @@ addShowRoute.post("/addShow", async (req, res) => {
     let existingShow = await ShowModel.findOne({ title });
 
     if (existingShow) {
-      // 🧠 Purane showDates me naye dates merge karne ka logic
-      const updatedDates = { ...Object.fromEntries(existingShow.showDates) };
-
-      for (const [date, times] of Object.entries(showDates)) {
-        if (!updatedDates[date]) {
-          updatedDates[date] = times;
-        } else {
-          for (const time of times) {
-            if (!updatedDates[date].includes(time)) {
-              updatedDates[date].push(time);
-            }
-          }
-        }
+      // Normalize + de-duplicate times per date.
+      // IMPORTANT: we overwrite showDates with the admin selection so old schedules don't accumulate.
+      const normalizedShowDates = {};
+      for (const [date, times] of Object.entries(showDates || {})) {
+        const arr = Array.isArray(times) ? times : [];
+        const uniq = Array.from(new Set(arr.map((t) => String(t).trim()).filter(Boolean)));
+        normalizedShowDates[date] = uniq;
       }
 
-      // 🔁 Update kar do final data
-      existingShow.showDates = updatedDates;
+      existingShow.showDates = normalizedShowDates;
       existingShow.price = price;
       await existingShow.save();
 

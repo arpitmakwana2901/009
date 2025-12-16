@@ -58,7 +58,13 @@ adminListBookingsRoute.get("/shows-stats", async (req, res) => {
       const showDatesObj = show.showDates
         ? Object.fromEntries(show.showDates)
         : {};
-      const showTimeCount = Object.values(showDatesObj).flat().length;
+
+      // Count UNIQUE time slots per date (prevents duplicates from inflating counts)
+      const showTimeCount = Object.values(showDatesObj).reduce((sum, times) => {
+        const arr = Array.isArray(times) ? times : [];
+        const uniq = new Set(arr.map((t) => String(t).trim()).filter(Boolean));
+        return sum + uniq.size;
+      }, 0);
 
       return {
         ...show.toObject(),
