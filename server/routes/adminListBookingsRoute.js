@@ -42,7 +42,10 @@ adminListBookingsRoute.get("/shows-stats", async (req, res) => {
     ]);
 
     const statsByMovieId = new Map(
-      stats.map((s) => [String(s._id), { totalBookings: s.totalBookings, earnings: s.earnings }])
+      stats.map((s) => [
+        String(s._id),
+        { totalBookings: s.totalBookings, earnings: s.earnings },
+      ])
     );
 
     const data = shows.map((show) => {
@@ -51,8 +54,16 @@ adminListBookingsRoute.get("/shows-stats", async (req, res) => {
         earnings: 0,
       };
 
+      // showDates is a Mongoose Map; convert to a plain object so JSON keeps the entries
+      const showDatesObj = show.showDates
+        ? Object.fromEntries(show.showDates)
+        : {};
+      const showTimeCount = Object.values(showDatesObj).flat().length;
+
       return {
         ...show.toObject(),
+        showDates: showDatesObj,
+        showTimeCount,
         totalBookings: s.totalBookings,
         earnings: s.earnings,
       };

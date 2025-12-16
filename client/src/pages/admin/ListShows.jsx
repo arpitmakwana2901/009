@@ -76,9 +76,7 @@ const ListShows = () => {
                   <td className="p-2 min-w-45 pl-5">{show.title}</td>
 
                   {/* Total shows created */}
-                  <td className="p-2">
-                    {Object.values(show.showDates || {}).flat().length}
-                  </td>
+                  <td className="p-2">{show?.showTimeCount || 0}</td>
 
                   {/* Total seats */}
                   <td className="p-2">{totalBookings}</td>
