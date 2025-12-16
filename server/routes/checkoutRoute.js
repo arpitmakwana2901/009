@@ -58,7 +58,7 @@ checkoutRoute.get("/", authenticate, async (req, res) => {
     const userId = req.user._id || req.user.userId;
 
     const bookings = await CheckoutModel.find({ userId }).sort({
-      bookingDate: -1,
+      createdAt: -1,
     }); // Latest bookings first
 
     res.status(200).json({

@@ -30,7 +30,7 @@ const DonePayment = () => {
         `${API_URL}/payments/api`,
         {
           bookingId: booking._id,
-          
+
           movieTitle: booking.movieTitle,
           seats: booking.seats,
           totalAmount: booking.totalAmount,
@@ -40,11 +40,10 @@ const DonePayment = () => {
             Authorization: `Bearer ${token}`,
           },
         }
-        
       );
 
       console.log("PAYMENT RESPONSE:", res.data);
-            console.log(booking, "bookingId");
+      console.log(booking, "bookingId");
 
       if (res.data.success) {
         toast.success("🎉 Payment Successful!");

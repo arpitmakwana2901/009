@@ -54,12 +54,23 @@ const checkoutSchema = mongoose.Schema(
     paymentDate: {
       type: Date,
     },
+    // Payment id should only exist after successful payment.
+    // Keep it undefined for pending bookings so unique indexes won't conflict.
     paymentId: {
       type: String,
-      default: null,
+      default: undefined,
     },
   },
   { timestamps: true }
+);
+
+// Unique only when a real string paymentId is present.
+checkoutSchema.index(
+  { paymentId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { paymentId: { $type: "string" } },
+  }
 );
 
 const CheckoutModel = mongoose.model("checkout", checkoutSchema);
