@@ -23,6 +23,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
+      "http://localhost:5174", // ✅ ADD THIS
       "https://movie-project-six-tan.vercel.app",
     ],
     methods: "GET,POST,PUT,DELETE",
