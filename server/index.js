@@ -15,6 +15,7 @@ const adminSidebarRoute = require("./routes/adminSidebarRoute");
 const dashboardRoute = require("./routes/adminDashboardRoute");
 const favoriteRouter = require("./routes/favoriteRoute");
 const adminListBookingsRoute = require("./routes/adminListBookingsRoute");
+const adminAuthRoute = require("./routes/adminAuthRoute");
 const paymentRouter = require("./routes/paymentRoute");
 const app = express();
 require("dotenv").config();
@@ -35,6 +36,7 @@ app.use(
 app.use(express.json());
 
 app.use("/user", userRoute);
+app.use("/admin-auth", adminAuthRoute);
 app.use("/shows", addShowRoute);
 app.use("/buy-ticket", buyTicketRoute);
 app.use("/book-ticket", bookingRoute);

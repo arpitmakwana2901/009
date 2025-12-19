@@ -20,7 +20,10 @@ const AdminAuthPage = () => {
     }
   }, [isAuthenticated, token, navigate]);
 
+  const [mode, setMode] = useState("login"); // 'login' | 'register'
+
   const [data, setData] = useState({
+    userName: "",
     email: "",
     password: "",
   });
@@ -28,6 +31,36 @@ const AdminAuthPage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAdminRegister = async (e) => {
+    e.preventDefault();
+
+    if (!data.userName.trim() || !data.email.trim() || !data.password.trim()) {
+      toast.error("Name, email and password are required");
+      return;
+    }
+
+    try {
+      const res = await axios.post(`${API_URL}/admin-auth/register`, {
+        userName: data.userName,
+        email: data.email,
+        password: data.password,
+      });
+
+      const newToken = res.data?.myToken;
+      if (!newToken) {
+        toast.error("Registration failed");
+        return;
+      }
+
+      // Auto login after successful registration
+      login(newToken, { firstName: "Admin", lastName: "", email: data.email });
+      toast.success("✅ Admin registered & logged in");
+      navigate("/admin", { replace: true });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Admin registration failed");
+    }
   };
 
   const handleAdminLogin = async (e) => {
@@ -84,8 +117,14 @@ const AdminAuthPage = () => {
 
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
         <div className="py-4 px-6 bg-red-600 text-white">
-          <h2 className="text-lg font-semibold">Admin Login</h2>
-          <p className="text-sm opacity-90">Use your admin credentials</p>
+          <h2 className="text-lg font-semibold">
+            {mode === "login" ? "Admin Login" : "Admin Registration"}
+          </h2>
+          <p className="text-sm opacity-90">
+            {mode === "login"
+              ? "Use your admin credentials"
+              : "Create an admin account"}
+          </p>
         </div>
 
         <div className="p-6 text-black">
@@ -105,6 +144,17 @@ const AdminAuthPage = () => {
                 Logout & Continue
               </button>
             </div>
+          )}
+
+          {mode === "register" && (
+            <input
+              type="text"
+              name="userName"
+              placeholder="Admin Name"
+              className="w-full border p-3 rounded mb-3 text-black placeholder:text-gray-500 focus:outline-red-600"
+              value={data.userName}
+              onChange={handleInputChange}
+            />
           )}
 
           <input
@@ -128,10 +178,28 @@ const AdminAuthPage = () => {
           <button
             disabled={isAuthenticated && currentRole && currentRole !== "admin"}
             className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition disabled:opacity-60"
-            onClick={handleAdminLogin}
+            onClick={mode === "login" ? handleAdminLogin : handleAdminRegister}
           >
-            Login as Admin
+            {mode === "login" ? "Login as Admin" : "Register as Admin"}
           </button>
+
+          <div className="text-center mt-4">
+            {mode === "login" ? (
+              <button
+                onClick={() => setMode("register")}
+                className="text-sm text-black hover:text-red-600 underline"
+              >
+                Create Admin Account
+              </button>
+            ) : (
+              <button
+                onClick={() => setMode("login")}
+                className="text-sm text-black hover:text-red-600 underline"
+              >
+                Back to Admin Login
+              </button>
+            )}
+          </div>
 
           <div className="text-center mt-4">
             <Link to="/auth" className="text-sm text-black hover:text-red-600 underline">

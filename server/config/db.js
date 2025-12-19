@@ -1,40 +1,5 @@
 const mongoose = require("mongoose");
 
-const ensureAdminUser = async () => {
-  try {
-    const adminEmail = process.env.ADMIN_EMAIL;
-    const adminPassword = process.env.ADMIN_PASSWORD;
-
-    if (!adminEmail || !adminPassword) return;
-
-    const bcrypt = require("bcrypt");
-    const UserModel = require("../models/userModel");
-
-    const existing = await UserModel.findOne({ email: adminEmail });
-
-    if (existing) {
-      if (existing.role !== "admin") {
-        existing.role = "admin";
-        await existing.save();
-      }
-      return;
-    }
-
-    const hashed = await bcrypt.hash(adminPassword, 10);
-
-    await UserModel.create({
-      userName: "Admin",
-      email: adminEmail,
-      password: hashed,
-      role: "admin",
-    });
-
-    console.log("✅ Admin user ensured:", adminEmail);
-  } catch (err) {
-    console.error("Admin seed error:", err?.message || err);
-  }
-};
-
 const ensureCheckoutPaymentIdIndex = async () => {
   // NOTE: this runs after connection is established.
   // It fixes old DB state where `paymentId` had a unique index that treated null as a value,
@@ -82,7 +47,6 @@ const connection = async () => {
   await mongoose.connect(process.env.MONGODB_URL);
   console.log("Database Connected");
   await ensureCheckoutPaymentIdIndex();
-  await ensureAdminUser();
 };
 
 module.exports = connection;
