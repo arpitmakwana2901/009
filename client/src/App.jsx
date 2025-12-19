@@ -17,6 +17,7 @@ import ListBookings from "./pages/admin/ListBookings";
 import AddShows from "./pages/admin/AddShows";
 import EditShow from "./pages/admin/EditShow";
 import AuthPage from "./pages/AuthPage";
+import AdminAuthPage from "./pages/AdminAuthPage";
 import PrivateRoute from "./components/PrivateRoute";
 import AdminRoute from "./components/AdminRoute";
 import UserMovies from "./components/UserMovie";
@@ -59,8 +60,9 @@ const App = () => {
         <Route path="/my-movies" element={<UserMovies />} />
         <Route path="/done-payment" element={<DonePayment />} />
 
-        {/* ✅ New Auth route */}
+        {/* ✅ Auth routes */}
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/admin-auth" element={<AdminAuthPage />} />
 
         <Route
           path="/admin/*"

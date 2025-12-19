@@ -4,10 +4,13 @@ import { assets } from "../assets/assets";
 import { MenuIcon, SearchIcon, XIcon, LogOut } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "./context/AuthContext";
+import { decodeJwtPayload } from "../lib/jwt";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { logout, isAuthenticated, userData } = useAuth();
+  const { logout, isAuthenticated, userData, token } = useAuth();
+  const role = decodeJwtPayload(token || "")?.role;
+  const isAdmin = role === "admin";
   const navigate = useNavigate();
 
   const showToast = (type, message) => {
@@ -176,14 +179,31 @@ const Navbar = () => {
         <SearchIcon className="max-md:hidden w-6 h-6 cursor-pointer" />
 
         {!isAuthenticated ? (
-          <button
-            onClick={() => navigate("/auth")}
-            className="px-4 py-1 sm:px-7 sm:py-2 bg-primary hover:bg-primary-dull transition rounded-full font-medium cursor-pointer"
-          >
-            Login
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/auth")}
+              className="px-4 py-1 sm:px-7 sm:py-2 bg-primary hover:bg-primary-dull transition rounded-full font-medium cursor-pointer"
+            >
+              Login
+            </button>
+            <button
+              onClick={() => navigate("/admin-auth")}
+              className="px-4 py-1 sm:px-6 sm:py-2 bg-[#2a0f0f] hover:bg-[#3a1a1a] transition rounded-full font-medium cursor-pointer text-white"
+            >
+              Admin
+            </button>
+          </div>
         ) : (
           <div className="flex items-center gap-4">
+            {isAdmin && (
+              <button
+                onClick={() => navigate("/admin")}
+                className="px-4 py-2 bg-[#2a0f0f] hover:bg-[#3a1a1a] transition rounded-full font-medium cursor-pointer text-white max-md:hidden"
+              >
+                Admin Panel
+              </button>
+            )}
+
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 transition rounded-full font-medium cursor-pointer text-white max-md:hidden"

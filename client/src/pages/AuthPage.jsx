@@ -260,6 +260,16 @@ const AuthPage = () => {
               >
                 Login
               </button>
+
+              <div className="text-center mt-3">
+                <Link
+                  to="/admin-auth"
+                  className="text-sm text-black hover:text-red-600 underline"
+                >
+                  Admin Login
+                </Link>
+              </div>
+
               <p className="text-sm text-black mt-3 text-center">
                 Don't have an account?{" "}
                 <span
