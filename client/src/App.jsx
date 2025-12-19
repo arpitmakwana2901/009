@@ -18,6 +18,7 @@ import AddShows from "./pages/admin/AddShows";
 import EditShow from "./pages/admin/EditShow";
 import AuthPage from "./pages/AuthPage";
 import PrivateRoute from "./components/PrivateRoute";
+import AdminRoute from "./components/AdminRoute";
 import UserMovies from "./components/UserMovie";
 import DonePayment from "./pages/DonePayment";
 
@@ -61,7 +62,14 @@ const App = () => {
         {/* ✅ New Auth route */}
         <Route path="/auth" element={<AuthPage />} />
 
-        <Route path="/admin/*" element={<Layout />}>
+        <Route
+          path="/admin/*"
+          element={
+            <AdminRoute>
+              <Layout />
+            </AdminRoute>
+          }
+        >
           <Route index element={<Dashboard />} />
           <Route path="add-shows" element={<AddShows />} />
           <Route path="list-shows" element={<ListShows />} />
