@@ -45,9 +45,16 @@ userRoute.post("/login", async (req, res) => {
 
     // Token generation
     // login
+    const JWT_SECRET = process.env.SECRET_KEY || "arpit";
+
     const myToken = jwt.sign(
-      { _id: user._id, userName: user.userName, email: user.email },
-      "arpit",
+      {
+        _id: user._id,
+        userName: user.userName,
+        email: user.email,
+        role: user.role || "user",
+      },
+      JWT_SECRET,
       { expiresIn: "168h" }
     );
 

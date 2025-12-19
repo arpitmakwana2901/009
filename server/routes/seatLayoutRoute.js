@@ -1,10 +1,11 @@
 const express = require("express");
 const authenticate = require("../middlewere/auth");
+const authorizeAdmin = require("../middlewere/authorizeAdmin");
 const SeatLayoutModel = require("../models/seatLayoutModel");
 
 const seatLayoutRoutes = express.Router();
 
-seatLayoutRoutes.post("/add", authenticate, async (req, res) => {
+seatLayoutRoutes.post("/add", authorizeAdmin, async (req, res) => {
   try {
     const { movieId, timeSlots } = req.body;
     console.log(movieId, "MOVIE_ID");
@@ -65,7 +66,7 @@ seatLayoutRoutes.get("/:movieId", async (req, res) => {
 //   "categories": [...updated categories array...]
 // }
 // ================================================
-seatLayoutRoutes.put("/update/:movieId", authenticate, async (req, res) => {
+seatLayoutRoutes.put("/update/:movieId", authorizeAdmin, async (req, res) => {
   try {
     const { movieId } = req.params;
     const { time, categories } = req.body;
@@ -105,7 +106,7 @@ seatLayoutRoutes.put("/update/:movieId", authenticate, async (req, res) => {
 // ================================================
 // DELETE → Delete entire seat layout for a movie
 // ================================================
-seatLayoutRoutes.delete("/delete/:movieId", authenticate, async (req, res) => {
+seatLayoutRoutes.delete("/delete/:movieId", authorizeAdmin, async (req, res) => {
   try {
     const layout = await SeatLayoutModel.findOneAndDelete({
       movieId: req.params.movieId,

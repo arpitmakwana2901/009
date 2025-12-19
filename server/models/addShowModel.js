@@ -26,6 +26,11 @@ const showSchema = new mongoose.Schema(
       default: {},
     },
     price: { type: Number, required: true }, // 👈 added
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
   },
   { timestamps: true }
 );

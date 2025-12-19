@@ -1,20 +1,23 @@
 const jwt = require("jsonwebtoken");
 
+const JWT_SECRET = process.env.SECRET_KEY || "arpit";
+
 const authenticate = async (req, res, next) => {
   try {
-    const token = req.headers.authorization;
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
-    console.log(token, "TOKEN");
-    // Split "Bearer <token>"
-    const decoded = jwt.verify(token.split(" ")[1], process.env.SECRET_KEY);
-    console.log(decoded, "DECODED");
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ message: "Unauthorized" });
+
+    // Supports both "Bearer <token>" and raw token.
+    const token = String(authHeader).includes(" ")
+      ? String(authHeader).split(" ")[1]
+      : String(authHeader);
+
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (!decoded) return res.status(401).json({ message: "Unauthorized" });
 
     req.user = decoded; // attach decoded payload directly
-    console.log("Authenticated user:", req.user);
     next();
   } catch (error) {
-    console.log("Auth error:", error);
     return res.status(401).json({ message: error.message });
   }
 };

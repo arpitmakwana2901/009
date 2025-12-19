@@ -4,18 +4,20 @@ import axios from "axios";
 import { dateFormat } from "./../../lib/dateFormat";
 import { toast } from "react-hot-toast";
 import { API_URL } from "../../App";
+import { useAuth } from "../../components/context/AuthContext";
 
 const ListBookings = () => {
   const currency = import.meta.env.VITE_CURRENCY;
+  const { token } = useAuth();
 
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const getAllBookings = async () => {
     try {
-      const res = await axios.get(
-        `${API_URL}/admin/all-bookings`
-      );
+      const res = await axios.get(`${API_URL}/admin/all-bookings`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (res.data.success) {
         setBookings(res.data.data);

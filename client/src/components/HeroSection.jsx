@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";

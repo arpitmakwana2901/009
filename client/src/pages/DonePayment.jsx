@@ -46,15 +46,16 @@ const DonePayment = () => {
       console.log(booking, "bookingId");
 
       if (res.data.success) {
-        // toast.success("🎉 Payment Successful!");
+        toast.success("🎉 Payment Successful!");
 
-        navigate("/my-bookings", {
+        // Keep latest booking info in history for MyBookings page (optional),
+        // but redirect to Home as requested.
+        navigate("/", {
           state: {
             latestBooking: {
               ...booking,
               isPaid: true,
             },
-            message: "Booking confirmed successfully!",
           },
           replace: true,
         });

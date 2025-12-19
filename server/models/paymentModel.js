@@ -8,7 +8,7 @@ const paymentSchema = new mongoose.Schema({
   },
   bookingId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Booking', // Assume Booking model hai
+    ref: 'checkout',
     required: true,
   },
   movieTitle: {

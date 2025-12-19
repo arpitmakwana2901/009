@@ -31,7 +31,7 @@ const Favorite = () => {
       console.log("Local favorites:", localFavorites);
 
       setFavorites(localFavorites);
-    } catch (err) {
+    } catch {
       console.log("Backend unavailable, using local storage");
       const localFavorites = JSON.parse(
         localStorage.getItem("userFavorites") || "[]"

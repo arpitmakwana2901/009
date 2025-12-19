@@ -4,14 +4,12 @@ import axios from "axios";
 import { ArrowRightIcon, ClockIcon, MenuIcon, XIcon } from "lucide-react";
 import BlurCircle from "../components/BlurCircle";
 import { toast, Toaster } from "react-hot-toast";
-import { useAuth } from "../components/context/AuthContext";
 import { API_URL } from "../App";
 
 const SeatLayout = () => {
   const { id } = useParams();
   console.log(id, "movie");
   const navigate = useNavigate();
-  const { token } = useAuth();
 
   const [layoutData, setLayoutData] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);

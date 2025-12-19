@@ -11,9 +11,11 @@ import Title from "../../components/admin/Title";
 import BlurCircle from "../../components/BlurCircle";
 import { dateFormat } from "../../lib/dateFormat";
 import { API_URL } from "../../App";
+import { useAuth } from "../../components/context/AuthContext";
 
 const Dashboard = () => {
   const currency = "₹";
+  const { token } = useAuth();
 
   const [dashboardData, setDashboardData] = useState({
     totalBookings: 0,
@@ -50,9 +52,9 @@ const Dashboard = () => {
   // ✅ Fetch data from backend
   const fetchDashboardData = async () => {
     try {
-      const res = await axios.get(
-        `${API_URL}/adminDashboard`
-      );
+      const res = await axios.get(`${API_URL}/adminDashboard`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (res.data.success) {
         setDashboardData(res.data.data);

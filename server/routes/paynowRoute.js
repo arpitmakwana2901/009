@@ -2,9 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const authenticate = require("../middlewere/auth");
 const CheckoutModel = require("../models/checkoutModel");
-const Payment = require("../models/paymentModel");
 const paynowRoute = express.Router();
 
+// This endpoint represents the "start payment" step (kept for current UI flow).
+// It stores a paymentId on the booking but DOES NOT confirm payment.
 paynowRoute.post("/pay-now/:id", authenticate, async (req, res) => {
   try {
     const bookingId = req.params.id;
@@ -36,29 +37,15 @@ paynowRoute.post("/pay-now/:id", authenticate, async (req, res) => {
       });
     }
 
-    // 2) Mark booking paid
-    booking.isPaid = true;
-    booking.status = "confirmed";
-    booking.paymentDate = new Date();
-    if (paymentId) booking.paymentId = paymentId;
-    await booking.save();
-
-    // 3) Store payment/ticket record (so it is saved in DB on Pay Now)
-    const existingPayment = await Payment.findOne({ bookingId: booking._id });
-    if (!existingPayment) {
-      await Payment.create({
-        userId: booking.userId,
-        bookingId: booking._id,
-        movieTitle: booking.movieTitle,
-        seats: booking.seats,
-        totalAmount: booking.totalAmount,
-        status: "success",
-      });
+    // Store a paymentId (optional), but keep booking pending until /payments/api confirms.
+    if (paymentId && !booking.paymentId) {
+      booking.paymentId = paymentId;
+      await booking.save();
     }
 
     res.status(200).json({
       success: true,
-      message: "Payment successful",
+      message: "Payment initiated",
       data: booking,
     });
   } catch (error) {

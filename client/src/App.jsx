@@ -15,6 +15,7 @@ import Layout from "./pages/admin/Layout";
 import ListShows from "./pages/admin/ListShows";
 import ListBookings from "./pages/admin/ListBookings";
 import AddShows from "./pages/admin/AddShows";
+import EditShow from "./pages/admin/EditShow";
 import AuthPage from "./pages/AuthPage";
 import PrivateRoute from "./components/PrivateRoute";
 import UserMovies from "./components/UserMovie";
@@ -64,6 +65,7 @@ const App = () => {
           <Route index element={<Dashboard />} />
           <Route path="add-shows" element={<AddShows />} />
           <Route path="list-shows" element={<ListShows />} />
+          <Route path="edit-show/:id" element={<EditShow />} />
           <Route path="list-bookings" element={<ListBookings />} />
         </Route>
       </Routes>

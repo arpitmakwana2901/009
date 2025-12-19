@@ -107,7 +107,7 @@ const MyBookings = () => {
       );
 
       if (res.data.success) {
-        toast.success("Payment Successful 🎉");
+        toast.success("Proceed to confirm payment");
 
         navigate("/done-payment", {
           state: {

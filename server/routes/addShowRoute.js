@@ -1,10 +1,12 @@
 const express = require("express");
 const ShowModel = require("../models/addShowModel");
+const SeatLayoutModel = require("../models/seatLayoutModel");
+const authorizeAdmin = require("../middlewere/authorizeAdmin");
 const addShowRoute = express.Router();
 
 // ➤ Add Show
 
-addShowRoute.post("/addShow", async (req, res) => {
+addShowRoute.post("/addShow", authorizeAdmin, async (req, res) => {
   try {
     const {
       title,
@@ -45,6 +47,14 @@ addShowRoute.post("/addShow", async (req, res) => {
       });
     }
 
+    // Normalize + de-duplicate times per date.
+    const normalizedShowDates = {};
+    for (const [date, times] of Object.entries(showDates || {})) {
+      const arr = Array.isArray(times) ? times : [];
+      const uniq = Array.from(new Set(arr.map((t) => String(t).trim()).filter(Boolean)));
+      normalizedShowDates[date] = uniq;
+    }
+
     // 🆕 Agar new movie hai to create karo
     const newShow = await ShowModel.create({
       title,
@@ -57,7 +67,7 @@ addShowRoute.post("/addShow", async (req, res) => {
       language,
       watchTrailer,
       cast,
-      showDates,
+      showDates: normalizedShowDates,
       price,
     });
 
@@ -79,7 +89,17 @@ addShowRoute.post("/addShow", async (req, res) => {
 // ➤ Get all shows
 addShowRoute.get("/getShows", async (req, res) => {
   try {
-    const shows = await ShowModel.find().sort({ createdAt: -1 });
+    const { status } = req.query;
+
+    const filter = {};
+    if (status === "active") {
+      // Backward compatible: old docs may not have `status` field.
+      filter.$or = [{ status: "active" }, { status: { $exists: false } }];
+    } else if (status === "inactive") {
+      filter.status = "inactive";
+    }
+
+    const shows = await ShowModel.find(filter).sort({ createdAt: -1 });
     res.status(200).json({
       message: "Shows fetched successfully",
       data: shows,
@@ -88,7 +108,7 @@ addShowRoute.get("/getShows", async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching shows", error: error.message });
-  } 
+  }
 });
 
 // ➤ Get single show
@@ -105,6 +125,109 @@ addShowRoute.get("/getShows/:id", async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching show", error: error.message });
+  }
+});
+
+// ➤ Update show (Admin)
+addShowRoute.put("/:id", authorizeAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const allowedFields = [
+      "title",
+      "overview",
+      "backdrop_path",
+      "release_date",
+      "vote_average",
+      "genres",
+      "runtime",
+      "language",
+      "watchTrailer",
+      "cast",
+      "showDates",
+      "price",
+      "status",
+    ];
+
+    const updates = {};
+    for (const key of allowedFields) {
+      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    }
+
+    if (updates.showDates) {
+      const normalizedShowDates = {};
+      for (const [date, times] of Object.entries(updates.showDates || {})) {
+        const arr = Array.isArray(times) ? times : [];
+        const uniq = Array.from(
+          new Set(arr.map((t) => String(t).trim()).filter(Boolean))
+        );
+        normalizedShowDates[date] = uniq;
+      }
+      updates.showDates = normalizedShowDates;
+    }
+
+    const updated = await ShowModel.findByIdAndUpdate(id, updates, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updated) return res.status(404).json({ success: false, message: "Show not found" });
+
+    return res.status(200).json({
+      success: true,
+      message: "Show updated successfully",
+      data: updated,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ➤ Toggle status (Admin)
+addShowRoute.patch("/:id/status", authorizeAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (status !== "active" && status !== "inactive") {
+      return res.status(400).json({ success: false, message: "Invalid status" });
+    }
+
+    const updated = await ShowModel.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) return res.status(404).json({ success: false, message: "Show not found" });
+
+    return res.status(200).json({
+      success: true,
+      message: "Status updated successfully",
+      data: updated,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ➤ Delete show (Admin)
+addShowRoute.delete("/:id", authorizeAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deleted = await ShowModel.findByIdAndDelete(id);
+    if (!deleted) return res.status(404).json({ success: false, message: "Show not found" });
+
+    // Cleanup seat layout if present
+    await SeatLayoutModel.findOneAndDelete({ movieId: id });
+
+    return res.status(200).json({
+      success: true,
+      message: "Show deleted successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 });
 

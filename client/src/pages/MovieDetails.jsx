@@ -30,7 +30,7 @@ const MovieDetails = () => {
     fetchMovie();
   }, [id]);
 
-  const handleAddToFavorites = async () => {
+  const _handleAddToFavorites = async () => {
     const token = localStorage.getItem("token");
     
     if (!token) {
@@ -132,7 +132,7 @@ const MovieDetails = () => {
       localStorage.setItem('userFavorites', JSON.stringify(userFavorites));
       
       toast.success("✅ Added to favorites!");
-    } catch (err) {
+    } catch {
       toast.error("Error adding to favorites");
     }
   };

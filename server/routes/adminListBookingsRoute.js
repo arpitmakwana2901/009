@@ -2,10 +2,12 @@ const express = require("express");
 const CheckoutModel = require("../models/checkoutModel");
 const ShowModel = require("../models/addShowModel");
 
+const authorizeAdmin = require("../middlewere/authorizeAdmin");
+
 const adminListBookingsRoute = express.Router();
 
 // GET /admin/all-bookings
-adminListBookingsRoute.get("/all-bookings", async (req, res) => {
+adminListBookingsRoute.get("/all-bookings", authorizeAdmin, async (req, res) => {
   try {
     const bookings = await CheckoutModel.find()
       .populate("userId", "userName email")
@@ -26,7 +28,7 @@ adminListBookingsRoute.get("/all-bookings", async (req, res) => {
 
 // GET /admin/shows-stats
 // Returns Show list with computed { totalBookings, earnings } from ALL checkouts.
-adminListBookingsRoute.get("/shows-stats", async (req, res) => {
+adminListBookingsRoute.get("/shows-stats", authorizeAdmin, async (req, res) => {
   try {
     const shows = await ShowModel.find().sort({ createdAt: -1 });
 

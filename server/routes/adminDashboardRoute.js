@@ -6,7 +6,9 @@ const SeatBookingModel = require("../models/seatBookingModel");
 
 const dashboardRoute = express.Router();
 
-dashboardRoute.get("/", async (req, res) => {
+const authorizeAdmin = require("../middlewere/authorizeAdmin");
+
+dashboardRoute.get("/", authorizeAdmin, async (req, res) => {
   try {
     // 🧮 Total Bookings (all checkouts)
     const totalBookings = await CheckoutModel.countDocuments();
